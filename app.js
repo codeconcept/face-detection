@@ -17,12 +17,15 @@ faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL).then(() => {
 });
 
 function getImage() {
+  // remove previous image
+  while (uploadedImageDiv.hasChildNodes()) {
+    uploadedImageDiv.removeChild(uploadedImageDiv.children[0]);
+  }
   console.log("images", this.files[0]);
   const imageToProcess = this.files[0];
 
   // display uploaded image
-  let newImg = new Image(imageToProcess.width, imageToProcess.height);
-  console.log("newImg", newImg, newImg.width, newImg.height);
+  let newImg = new Image();
   newImg.src = imageToProcess;
   newImg.src = URL.createObjectURL(imageToProcess);
   uploadedImageDiv.appendChild(newImg);
@@ -39,7 +42,7 @@ function getImage() {
 
 function processImage({ image, imageDimensions }) {
   if (modelsLoaded.length !== 2) {
-    console.log("please wait while: models are still loading");
+    console.log("please wait: models are still loading");
     return;
   }
   console.log("ready!", image, imageDimensions);
