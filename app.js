@@ -43,19 +43,26 @@ function processImage({ image, imageDimensions }) {
     return;
   }
   console.log("ready!", image, imageDimensions);
+
+  const canvas = faceapi.createCanvasFromMedia(image);
+  console.log("canvas", canvas);
+
+  uploadedImageDiv.appendChild(canvas);
+  canvas.style.position = "absolute";
+  canvas.style.top = uploadedImageDiv.firstChild.y + "px";
+  canvas.style.left = uploadedImageDiv.firstChild.x + "px";
+
   faceapi.detectAllFaces(image).then(facesDetected => {
     console.log("detectAllFaces facesDetected", facesDetected);
     // to make sure displayed image size and original image size match
-    facesDetected = faceapi.resizeResults(image, {
+    facesDetectedImage = faceapi.resizeResults(image, {
       height: imageDimensions.height,
       width: imageDimensions.width
     });
-    const canvas = faceapi.createCanvasFromMedia(image);
-    console.log("canvas", canvas);
-    faceapi.draw.drawDetections(canvas, facesDetected);
-    uploadedImageDiv.appendChild(canvas);
-    canvas.style.position = "absolute";
-    canvas.style.top = uploadedImageDiv.firstChild.y + "px";
-    canvas.style.left = uploadedImageDiv.firstChild.x + "px";
+    console.log("after resize", facesDetected);
+
+    facesDetected.map(face => {
+      faceapi.draw.drawDetections(canvas, face);
+    });
   });
 }
