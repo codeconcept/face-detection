@@ -16,6 +16,11 @@ faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL).then(() => {
   modelsLoaded = [...modelsLoaded, "ssdMobilenetv1 loaded"];
 });
 
+faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL).then(() => {
+  console.log("ageGenderNet loaded");
+  modelsLoaded = [...modelsLoaded, "ageGenderNet loaded"];
+});
+
 function getImage() {
   // remove previous image
   while (uploadedImageDiv.hasChildNodes()) {
@@ -41,7 +46,7 @@ function getImage() {
 }
 
 function processImage({ image, imageDimensions }) {
-  if (modelsLoaded.length !== 2) {
+  if (modelsLoaded.length !== 3) {
     console.log("please wait: models are still loading");
     return;
   }
@@ -55,17 +60,20 @@ function processImage({ image, imageDimensions }) {
   canvas.style.top = uploadedImageDiv.firstChild.y + "px";
   canvas.style.left = uploadedImageDiv.firstChild.x + "px";
 
-  faceapi.detectAllFaces(image).then(facesDetected => {
-    console.log("detectAllFaces facesDetected", facesDetected);
-    // to make sure displayed image size and original image size match
-    facesDetectedImage = faceapi.resizeResults(image, {
-      height: imageDimensions.height,
-      width: imageDimensions.width
-    });
-    console.log("after resize", facesDetected);
+  faceapi
+    .detectAllFaces(image)
+    .withAgeAndGender()
+    .then(facesDetected => {
+      console.log("detectAllFaces facesDetected", facesDetected);
+      // to make sure displayed image size and original image size match
+      facesDetectedImage = faceapi.resizeResults(image, {
+        height: imageDimensions.height,
+        width: imageDimensions.width
+      });
+      console.log("after resize", facesDetected);
 
-    facesDetected.map(face => {
-      faceapi.draw.drawDetections(canvas, face);
+      facesDetected.map(face => {
+        faceapi.draw.drawDetections(canvas, face);
+      });
     });
-  });
 }
