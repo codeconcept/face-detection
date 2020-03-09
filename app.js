@@ -22,23 +22,40 @@ function getImage() {
 
   // display uploaded image
   let newImg = new Image(imageToProcess.width, imageToProcess.height);
+  console.log("newImg", newImg, newImg.width, newImg.height);
   newImg.src = imageToProcess;
   newImg.src = URL.createObjectURL(imageToProcess);
   uploadedImageDiv.appendChild(newImg);
-
-  processImage(newImg);
+  newImg.addEventListener("load", () => {
+    console.log("img loaded", newImg.width, newImg.height);
+    const imageDimensions = { width: newImg.width, height: newImg.height };
+    const data = {
+      image: newImg,
+      imageDimensions
+    };
+    processImage(data);
+  });
 }
 
-function processImage(image) {
+function processImage({ image, imageDimensions }) {
   if (modelsLoaded.length !== 2) {
     console.log("please wait while: models are still loading");
     return;
   }
-  console.log("ready!");
+  console.log("ready!", image, imageDimensions);
   faceapi.detectAllFaces(image).then(facesDetected => {
     console.log("detectAllFaces facesDetected", facesDetected);
     // to make sure displayed image size and original image size match
-    facesDetected = faceapi.resizeResults(facesDetected);
+    facesDetected = faceapi.resizeResults(image, {
+      height: imageDimensions.height,
+      width: imageDimensions.width
+    });
+    const canvas = faceapi.createCanvasFromMedia(image);
+    console.log("canvas", canvas);
     faceapi.draw.drawDetections(canvas, facesDetected);
+    uploadedImageDiv.appendChild(canvas);
+    canvas.style.position = "absolute";
+    canvas.style.top = uploadedImageDiv.firstChild.y + "px";
+    canvas.style.left = uploadedImageDiv.firstChild.x + "px";
   });
 }
